@@ -10,6 +10,7 @@ permissions:
   id-token: write
   contents: read
 
+# 🔥 CRÍTICO PARA TERRAFORM + OIDC
 env:
   ARM_USE_OIDC: true
   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -31,12 +32,11 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+    - name: Show Azure context (debug)
+      run: az account show
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
-
-    # ✅ Debug (clave si vuelve a fallar)
-    - name: Show Azure account
-      run: az account show
 
     - name: Terraform Init
       run: terraform init
