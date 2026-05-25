@@ -10,7 +10,6 @@ permissions:
   id-token: write
   contents: read
 
-# 🔥 CLAVE para que Terraform funcione con OIDC
 env:
   ARM_USE_OIDC: true
   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -22,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Azure Login (OIDC)
@@ -34,6 +33,10 @@ jobs:
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
+
+    # ✅ Debug (clave si vuelve a fallar)
+    - name: Show Azure account
+      run: az account show
 
     - name: Terraform Init
       run: terraform init
