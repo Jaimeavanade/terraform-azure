@@ -13,12 +13,18 @@ provider "azurerm" {
   features {}
 }
 
-# ==============================
 # VARIABLES
-# ==============================
-variable "resource_group_name" { type = string }
-variable "location" { type = string }
-variable "workspace_resource_id" { type = string }
+variable "resource_group_name" {
+  type = string
+}
+
+variable "location" {
+  type = string
+}
+
+variable "workspace_resource_id" {
+  type = string
+}
 
 variable "dcr_name" {
   type    = string
@@ -35,9 +41,7 @@ variable "tags" {
   default = {}
 }
 
-# ==============================
 # DCR
-# ==============================
 resource "azurerm_monitor_data_collection_rule" "windows_dcr" {
   name                = var.dcr_name
   resource_group_name = var.resource_group_name
