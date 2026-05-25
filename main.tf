@@ -13,22 +13,30 @@ provider "azurerm" {
   features {}
 }
 
+# ==============================
 # VARIABLES
+# ==============================
+
 variable "resource_group_name" {
-  type = string
+  description = "RG donde se despliega"
+  type        = string
 }
 
 variable "location" {
-  type = string
+  description = "Región Azure"
+  type        = string
 }
 
 variable "workspace_resource_id" {
-  type = string
+  description = "Resource ID del LAW"
+  type        = string
 }
 
+# 🔥 NUEVO: nombre parametrizable
 variable "dcr_name" {
-  type    = string
-  default = "windowssecurityevent-dcr"
+  description = "Nombre de la DCR"
+  type        = string
+  default     = "windowssecurityevent-dcr"
 }
 
 variable "data_collection_endpoint_id" {
@@ -41,7 +49,10 @@ variable "tags" {
   default = {}
 }
 
-# DCR
+# ==============================
+# RESOURCE DCR WINDOWS
+# ==============================
+
 resource "azurerm_monitor_data_collection_rule" "windows_dcr" {
   name                = var.dcr_name
   resource_group_name = var.resource_group_name
@@ -66,7 +77,9 @@ resource "azurerm_monitor_data_collection_rule" "windows_dcr" {
       streams = ["Microsoft-SecurityEvent"]
 
       x_path_queries = [
-        "Security!*"
+        "Security!*",
+        "Microsoft-Windows-AppLocker/EXE and DLL!*",
+        "Microsoft-Windows-AppLocker/MSI and Script!*"
       ]
     }
   }
@@ -79,6 +92,14 @@ resource "azurerm_monitor_data_collection_rule" "windows_dcr" {
   }
 }
 
+# ==============================
+# OUTPUTS
+# ==============================
+
 output "dcr_id" {
   value = azurerm_monitor_data_collection_rule.windows_dcr.id
+}
+
+output "dcr_name" {
+  value = azurerm_monitor_data_collection_rule.windows_dcr.name
 }
