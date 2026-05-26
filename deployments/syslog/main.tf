@@ -19,22 +19,18 @@ provider "azurerm" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Resource Group donde se despliega la DCR"
 }
 
 variable "location" {
   type        = string
-  description = "Región Azure"
 }
 
 variable "workspace_resource_id" {
   type        = string
-  description = "Resource ID del Log Analytics Workspace"
 }
 
 variable "dcr_name" {
   type        = string
-  description = "Nombre de la DCR Syslog"
   default     = "syslog-dcr"
 }
 
@@ -65,7 +61,6 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
     createdBy = "Sentinel"
   })
 
-  # 🔥 evitar errores al cambiar nombre
   lifecycle {
     create_before_destroy = true
   }
@@ -83,7 +78,7 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
   # ==========================
   data_sources {
 
-    # 🔐 Syslog seguridad (CORREGIDO)
+    # ✅ PRINCIPAL (SEGURIDAD)
     syslog {
       name    = "syslog-security"
       streams = ["Microsoft-Syslog"]
@@ -91,7 +86,6 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
       facility_names = [
         "auth",
         "authpriv",
-        "cron",
         "daemon",
         "kern",
         "syslog",
@@ -116,19 +110,29 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
       ]
     }
 
-    # 🔹 residual nopri
+    # ✅ CRÍTICO: habilita "Collect messages without PRI header"
     syslog {
       name    = "syslog-nopri"
       streams = ["Microsoft-Syslog"]
 
       facility_names = ["nopri"]
-      log_levels     = ["Emergency"]
+
+      # 🔥 esto asegura que NO salga "none"
+      log_levels = [
+        "Notice",
+        "Warning",
+        "Error",
+        "Critical",
+        "Alert",
+        "Emergency"
+      ]
     }
   }
 
   # ==========================
   # DESTINATIONS
   # ==========================
+
   destinations {
     log_analytics {
       name                  = "DataCollectionEvent"
