@@ -1,5 +1,5 @@
 resource_group_name = "rg-log-sentinel-jvs-test-001"
-location            = "westeurope"
+location = "francecentral"
 
 # 🔥 AQUÍ CAMBIAS EL NOMBRE
 dcr_name = "dcr-syslog-security-001"
