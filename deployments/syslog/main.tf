@@ -18,25 +18,25 @@ provider "azurerm" {
 # ==============================
 
 variable "resource_group_name" {
-  type        = string
+  type = string
 }
 
 variable "location" {
-  type        = string
+  type = string
 }
 
 variable "workspace_resource_id" {
-  type        = string
+  type = string
 }
 
 variable "dcr_name" {
-  type        = string
-  default     = "syslog-dcr"
+  type    = string
+  default = "syslog-dcr"
 }
 
 variable "data_collection_endpoint_id" {
   type    = string
-  default = null
+  default = ""
 }
 
 variable "tags" {
@@ -49,11 +49,13 @@ variable "tags" {
 # ==============================
 
 resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
+
   name                = var.dcr_name
   resource_group_name = var.resource_group_name
   location            = var.location
+  kind                = "Linux"
 
-  kind = "Linux"
+  description = ""
 
   data_collection_endpoint_id = var.data_collection_endpoint_id
 
@@ -71,6 +73,10 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
   data_flow {
     streams      = ["Microsoft-Syslog"]
     destinations = ["DataCollectionEvent"]
+
+    built_in_transform = ""
+    output_stream      = ""
+    transform_kql      = ""
   }
 
   # ==========================
@@ -78,20 +84,19 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
   # ==========================
   data_sources {
 
-    # ✅ PRINCIPAL (SEGURIDAD)
+    # ✅ BLOQUE PRINCIPAL (con alert + audit)
     syslog {
-      name    = "syslog-security"
+      name    = "sysLogsDataSource-main"
       streams = ["Microsoft-Syslog"]
 
       facility_names = [
-        "alert", 
+        "alert",
         "audit",
         "auth",
         "authpriv",
+        "cron",
         "daemon",
         "kern",
-        "syslog",
-        "user",
         "local0",
         "local1",
         "local2",
@@ -99,34 +104,26 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
         "local4",
         "local5",
         "local6",
-        "local7"
+        "local7",
+        "syslog",
+        "user"
       ]
 
+      # ✅ CLAVE → LOG_NOTICE
       log_levels = [
-        "Notice",
-        "Warning",
-        "Error",
-        "Critical",
-        "Alert",
-        "Emergency"
+        "Notice"
       ]
     }
 
-    # ✅ CRÍTICO: habilita "Collect messages without PRI header"
+    # ✅ NOPRI (para checkbox portal)
     syslog {
-      name    = "syslog-nopri"
+      name    = "sysLogsDataSource-nopri"
       streams = ["Microsoft-Syslog"]
 
       facility_names = ["nopri"]
 
-      # 🔥 esto asegura que NO salga "none"
       log_levels = [
-        "Notice",
-        "Warning",
-        "Error",
-        "Critical",
-        "Alert",
-        "Emergency"
+        "Notice"
       ]
     }
   }
@@ -134,7 +131,6 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
   # ==========================
   # DESTINATIONS
   # ==========================
-
   destinations {
     log_analytics {
       name                  = "DataCollectionEvent"
@@ -154,4 +150,3 @@ output "dcr_id" {
 output "dcr_name" {
   value = azurerm_monitor_data_collection_rule.syslog_dcr.name
 }
-``
