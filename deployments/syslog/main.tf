@@ -13,10 +13,7 @@ provider "azurerm" {
   features {}
 }
 
-# ==============================
 # VARIABLES
-# ==============================
-
 variable "resource_group_name" {
   type = string
 }
@@ -44,10 +41,7 @@ variable "tags" {
   default = {}
 }
 
-# ==============================
-# RESOURCE DCR SYSLOG
-# ==============================
-
+# RESOURCE
 resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
 
   name                = var.dcr_name
@@ -67,24 +61,15 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
     create_before_destroy = true
   }
 
-  # ==========================
-  # DATA FLOW
-  # ==========================
+  # ✅ DATA FLOW LIMPIO (sin campos vacíos)
   data_flow {
     streams      = ["Microsoft-Syslog"]
     destinations = ["DataCollectionEvent"]
-
-    built_in_transform = ""
-    output_stream      = ""
-    transform_kql      = ""
   }
 
-  # ==========================
-  # DATA SOURCES
-  # ==========================
   data_sources {
 
-    # ✅ BLOQUE PRINCIPAL (con alert + audit)
+    # ✅ principal
     syslog {
       name    = "sysLogsDataSource-main"
       streams = ["Microsoft-Syslog"]
@@ -109,13 +94,12 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
         "user"
       ]
 
-      # ✅ CLAVE → LOG_NOTICE
       log_levels = [
         "Notice"
       ]
     }
 
-    # ✅ NOPRI (para checkbox portal)
+    # ✅ nopri
     syslog {
       name    = "sysLogsDataSource-nopri"
       streams = ["Microsoft-Syslog"]
@@ -128,9 +112,6 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
     }
   }
 
-  # ==========================
-  # DESTINATIONS
-  # ==========================
   destinations {
     log_analytics {
       name                  = "DataCollectionEvent"
@@ -139,10 +120,7 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
   }
 }
 
-# ==============================
 # OUTPUTS
-# ==============================
-
 output "dcr_id" {
   value = azurerm_monitor_data_collection_rule.syslog_dcr.id
 }
