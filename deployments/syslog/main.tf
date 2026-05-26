@@ -27,16 +27,15 @@ variable "location" {
   description = "Región Azure"
 }
 
-# 🔥 PARAMETRIZADO IGUAL QUE EL ANTERIOR
+variable "workspace_resource_id" {
+  type        = string
+  description = "Resource ID del Log Analytics Workspace"
+}
+
 variable "dcr_name" {
   type        = string
   description = "Nombre de la DCR Syslog"
   default     = "syslog-dcr"
-}
-
-variable "workspace_resource_id" {
-  type        = string
-  description = "Resource ID del Log Analytics Workspace"
 }
 
 variable "data_collection_endpoint_id" {
@@ -66,6 +65,11 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
     createdBy = "Sentinel"
   })
 
+  # 🔥 evitar errores al cambiar nombre
+  lifecycle {
+    create_before_destroy = true
+  }
+
   # ==========================
   # DATA FLOW
   # ==========================
@@ -79,20 +83,27 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
   # ==========================
   data_sources {
 
+    # 🔐 Syslog seguridad (CORREGIDO)
     syslog {
       name    = "syslog-security"
       streams = ["Microsoft-Syslog"]
 
       facility_names = [
-        "alert",
-        "audit",
         "auth",
         "authpriv",
         "cron",
         "daemon",
         "kern",
         "syslog",
-        "user"
+        "user",
+        "local0",
+        "local1",
+        "local2",
+        "local3",
+        "local4",
+        "local5",
+        "local6",
+        "local7"
       ]
 
       log_levels = [
@@ -105,6 +116,7 @@ resource "azurerm_monitor_data_collection_rule" "syslog_dcr" {
       ]
     }
 
+    # 🔹 residual nopri
     syslog {
       name    = "syslog-nopri"
       streams = ["Microsoft-Syslog"]
